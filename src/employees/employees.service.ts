@@ -12,8 +12,10 @@ export class EmployeesService {
     });
   }
 
-  findAll() {
-    return this.databaseService.employee.findMany();
+  findAll(role: 'INTERN' | 'ENGINEER' | 'ADMIN') {
+    return role
+      ? this.databaseService.employee.findMany({ where: { role } })
+      : this.databaseService.employee.findMany();
   }
 
   findOne(id: number) {
