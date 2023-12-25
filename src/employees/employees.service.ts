@@ -1,39 +1,64 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
+import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
 
 @Injectable()
 export class EmployeesService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  create(createEmployeeDto: Prisma.EmployeeCreateInput) {
-    return this.databaseService.employee.create({
-      data: createEmployeeDto,
-    });
+  async create(createEmployeeDto: CreateEmployeeDto) {
+    try {
+      return await this.databaseService.employee.create({
+        data: createEmployeeDto,
+      });
+    } catch (error) {
+      throw new Error('Failed to create employee');
+    }
   }
 
-  findAll(role: 'INTERN' | 'ENGINEER' | 'ADMIN') {
-    return role
-      ? this.databaseService.employee.findMany({ where: { role } })
-      : this.databaseService.employee.findMany();
+  async findAll(role: 'INTERN' | 'ENGINEER' | 'ADMIN') {
+    try {
+      return role
+        ? await this.databaseService.employee.findMany({ where: { role } })
+        : await this.databaseService.employee.findMany();
+    } catch (error) {
+      throw new Error('Failed to fetch employees');
+    }
   }
 
-  findOne(id: number) {
-    return this.databaseService.employee.findUnique({
-      where: { id },
-    });
+  async findOne(id: number) {
+    try {
+      const user = await this.databaseService.employee.findUnique({
+        where: { id },
+      });
+
+      if (!user) throw new NotFoundException('User Not Found');
+
+      return user;
+    } catch (error) {
+      throw new Error('Failed to fetch employee');
+    }
   }
 
-  update(id: number, updateEmployeeDto: Prisma.EmployeeUpdateInput) {
-    return this.databaseService.employee.update({
-      where: { id },
-      data: updateEmployeeDto,
-    });
+  async update(id: number, updateEmployeeDto: UpdateEmployeeDto) {
+    try {
+      return await this.databaseService.employee.update({
+        where: { id },
+        data: updateEmployeeDto,
+      });
+    } catch (error) {
+      throw new Error('Failed to update employee');
+    }
   }
 
-  remove(id: number) {
-    return this.databaseService.employee.delete({
-      where: { id },
-    });
+  async remove(id: number) {
+    try {
+      return await this.databaseService.employee.delete({
+        where: { id },
+      });
+    } catch (error) {
+      throw new Error('Failed to delete employee');
+    }
   }
 }
